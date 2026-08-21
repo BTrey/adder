@@ -4,4 +4,34 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "textual>=8.2.8",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pylint>=4.0.7",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+exclude = ["\\.venv"]
+
+[tool.pylint.main]
+ignore-paths = ["\\.venv"]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint."messages control"]
+# useless-return: mypy --strict needs an explicit `return None`.
+disable = ["too-few-public-methods", "useless-return"]
