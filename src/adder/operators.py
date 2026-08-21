@@ -11,7 +11,7 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
-from src.model import Row, RowKind, Session
+from adder.model import Row, RowKind, Session
 
 VARIABLE_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 ASSIGNMENT = re.compile(r"^(?P<name>[^\s=]+)\s*(?:=\s*)?(?P<value>.*)$")

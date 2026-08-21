@@ -1,6 +1,6 @@
 """Tests for the session model."""
 
-from src.model import Row, RowKind, Session
+from adder.model import Row, RowKind, Session
 
 
 def test_row_defaults() -> None:

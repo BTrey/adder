@@ -2,9 +2,9 @@
 
 import pytest
 
-from src.commands import COMMANDS
-from src.model import Row, Session
-from src.operators import OPERATORS, EvaluationError
+from adder.commands import COMMANDS
+from adder.model import Row, Session
+from adder.operators import OPERATORS, EvaluationError
 
 
 def run(text: str, session: Session) -> Row | None:

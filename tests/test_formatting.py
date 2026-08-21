@@ -4,8 +4,8 @@ import math
 
 import pytest
 
-from src.formatting import build_list_text, build_value_text, format_value
-from src.model import Row, RowKind
+from adder.formatting import build_list_text, build_value_text, format_value
+from adder.model import Row, RowKind
 
 COLORS = {
     "text": "#839496",

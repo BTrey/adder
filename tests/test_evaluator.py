@@ -2,8 +2,8 @@
 
 import pytest
 
-from src.evaluator import evaluate_line
-from src.model import RowKind, Session
+from adder.evaluator import evaluate_line
+from adder.model import RowKind, Session
 
 
 @pytest.mark.parametrize("line", ["", "   ", "\t"])

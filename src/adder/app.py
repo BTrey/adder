@@ -10,11 +10,11 @@ from textual.containers import Horizontal, VerticalScroll
 from textual.theme import Theme
 from textual.widgets import Input, Static
 
-from src.cli import MAX_WIDTH, MIN_WIDTH
-from src.config import Palette
-from src.evaluator import evaluate_line
-from src.formatting import build_list_text, build_value_text
-from src.model import Session
+from adder.cli import MAX_WIDTH, MIN_WIDTH
+from adder.config import Palette
+from adder.evaluator import evaluate_line
+from adder.formatting import build_list_text, build_value_text
+from adder.model import Session
 
 THEME_NAME = "adder"
 

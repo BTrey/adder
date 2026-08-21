@@ -9,9 +9,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
-from src.model import Row, Session
-from src.operators import EvaluationError, Operator
-from src.operators import register as register_operator
+from adder.model import Row, Session
+from adder.operators import EvaluationError, Operator
+from adder.operators import register as register_operator
 
 
 class Command(ABC):
