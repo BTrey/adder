@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from src.config import (
+from adder.config import (
     DEFAULT_CONFIG_TEXT,
     ConfigError,
     Palette,

@@ -8,7 +8,7 @@ from collections.abc import Mapping, Sequence
 from rich.console import JustifyMethod
 from rich.text import Text
 
-from src.model import Row
+from adder.model import Row
 
 INTEGER_LIMIT = 1e15
 """Above this magnitude a float can no longer hold every integer, so use exponent form."""

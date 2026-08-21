@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from src.cli import DEFAULT_WIDTH, PRINT_CONFIG, parse_args, width_percent
+from adder.cli import DEFAULT_WIDTH, PRINT_CONFIG, parse_args, width_percent
 
 
 def test_defaults() -> None:

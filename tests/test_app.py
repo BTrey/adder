@@ -6,8 +6,8 @@ import pytest
 from rich.text import Text
 from textual.widgets import Input, Static
 
-from src.app import AdderApp
-from src.config import Palette
+from adder.app import AdderApp
+from adder.config import Palette
 
 SIZE = (80, 24)
 

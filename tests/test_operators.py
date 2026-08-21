@@ -2,8 +2,8 @@
 
 import pytest
 
-from src.model import RowKind, Session
-from src.operators import OPERATORS, EvaluationError, resolve_operand
+from adder.model import RowKind, Session
+from adder.operators import OPERATORS, EvaluationError, resolve_operand
 
 
 def run(symbol: str, operand: str, session: Session, text: str = "") -> object:

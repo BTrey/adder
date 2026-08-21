@@ -16,10 +16,20 @@ column on the same row. A line with no operator is only text.
 └─────────────────────────────────────────┘
 ```
 
+## Install
+
+```
+uv tool install git+https://github.com/BTrey/adder.git
+```
+
+This puts an `adder` command on your path. To run Adder once without an
+install, use `uvx --from git+https://github.com/BTrey/adder.git adder`. To
+remove it, use `uv tool uninstall adder`.
+
 ## Run
 
 ```
-uv run adder.py [-w N] [-c [PATH]]
+adder [-w N] [-c [PATH]]
 ```
 
 | Flag | What it does |
@@ -60,7 +70,7 @@ the reason, and the Value does not change. `/ 0` is an example.
 Adder reads its colors from an INI file. To get a copy of the defaults:
 
 ```
-uv run adder.py -c > ~/.config/adder/adder.conf
+adder -c > ~/.config/adder/adder.conf
 ```
 
 With no `-c` flag, Adder reads `$XDG_CONFIG_HOME/adder/adder.conf`, or
@@ -89,19 +99,30 @@ The defaults are solarized dark.
 
 ## Develop
 
+```
+git clone https://github.com/BTrey/adder.git
+cd adder
+uv sync
+uv run adder -w 40
+```
+
+`uv sync` installs the project into `.venv`, so `uv run adder` runs your working
+copy. `uv run python -m adder` does the same thing.
+
 | File | What it holds |
 | --- | --- |
-| `adder.py` | The entry point. |
-| `src/cli.py` | The command line. |
-| `src/config.py` | The palette and its INI file. |
-| `src/model.py` | The rows, the List, the Value, and the variables. |
-| `src/operators.py` | The operator registry. |
-| `src/commands.py` | The command registry. |
-| `src/evaluator.py` | Line parsing and dispatch. |
-| `src/formatting.py` | The two column renderables. |
-| `src/app.py` | The Textual app. |
+| `src/adder/main.py` | The entry point. |
+| `src/adder/__main__.py` | Support for `python -m adder`. |
+| `src/adder/cli.py` | The command line. |
+| `src/adder/config.py` | The palette and its INI file. |
+| `src/adder/model.py` | The rows, the List, the Value, and the variables. |
+| `src/adder/operators.py` | The operator registry. |
+| `src/adder/commands.py` | The command registry. |
+| `src/adder/evaluator.py` | Line parsing and dispatch. |
+| `src/adder/formatting.py` | The two column renderables. |
+| `src/adder/app.py` | The Textual app. |
 
-To add an operator, add one class to `src/operators.py`:
+To add an operator, add one class to `src/adder/operators.py`:
 
 ```python
 @register("%")
@@ -114,7 +135,7 @@ class Percent(ArithmeticOperator):
         return value * operand / 100
 ```
 
-To add a command, add one class to `src/commands.py` with the `@register`
+To add a command, add one class to `src/adder/commands.py` with the `@register`
 decorator and an `execute` method. A command that returns `None` adds no row.
 
 Raise `EvaluationError` for anything the user can get wrong. The evaluator turns
@@ -123,7 +144,7 @@ it into an error row, so no typed line can stop the program.
 Checks:
 
 ```
-uv run pytest --cov=src --cov=adder --cov-report=term-missing
+uv run pytest --cov=adder --cov-report=term-missing
 uv run mypy --strict .
-uv run pylint src adder.py
+uv run pylint src
 ```

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from src import commands  # pylint: disable=unused-import  # registers the @ operator
-from src.model import Row, Session
-from src.operators import OPERATORS, EvaluationError
+from adder import commands  # pylint: disable=unused-import  # registers the @ operator
+from adder.model import Row, Session
+from adder.operators import OPERATORS, EvaluationError
 
 __all__ = ["evaluate_line", "commands"]
 

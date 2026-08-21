@@ -12,7 +12,7 @@ DEFAULT_WIDTH: Final = 75
 MIN_WIDTH: Final = 0
 MAX_WIDTH: Final = 100
 
-PROGRAM = "adder.py"
+PROGRAM = "adder"
 DESCRIPTION = "A running-tape calculator and notepad for the terminal."
 EPILOG = """\
 operators: + - * / ^ (arithmetic), $name = 5 (variable), @clear (command)

@@ -1,12 +1,12 @@
-"""Adder: a running-tape calculator and notepad for the terminal."""
+"""The entry point: read the command line, load the colors, run the app."""
 
 from __future__ import annotations
 
 import sys
 
-from src.app import AdderApp
-from src.cli import PRINT_CONFIG, parse_args
-from src.config import DEFAULT_CONFIG_TEXT, ConfigError, load_palette
+from adder.app import AdderApp
+from adder.cli import PRINT_CONFIG, parse_args
+from adder.config import DEFAULT_CONFIG_TEXT, ConfigError, load_palette
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -22,7 +22,3 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     AdderApp(width=arguments.width, palette=palette).run()
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover

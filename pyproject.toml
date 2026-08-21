@@ -1,12 +1,19 @@
 [project]
 name = "adder"
 version = "0.1.0"
-description = "Add your description here"
+description = "A running-tape calculator and notepad for the terminal"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "textual>=8.2.8",
 ]
+
+[project.scripts]
+adder = "adder.main:main"
+
+[build-system]
+requires = ["uv_build>=0.11.27,<0.12.0"]
+build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
@@ -19,8 +26,11 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.coverage.report]
+# __main__.py runs only in a subprocess test, so its lines never reach this process.
+omit = ["src/adder/__main__.py"]
 
 [tool.mypy]
 strict = true
@@ -28,6 +38,7 @@ exclude = ["\\.venv"]
 
 [tool.pylint.main]
 ignore-paths = ["\\.venv"]
+init-hook = "import sys; sys.path.insert(0, 'src')"
 
 [tool.pylint.format]
 max-line-length = 100
