@@ -22,9 +22,12 @@ column on the same row. A line with no operator is only text.
 uv tool install git+https://github.com/BTrey/adder.git
 ```
 
-This puts an `adder` command on your path. To run Adder once without an
-install, use `uvx --from git+https://github.com/BTrey/adder.git adder`. To
-remove it, use `uv tool uninstall adder`.
+This puts an `adder` command on your path. Adder needs Python 3.14 or later.
+`uv` downloads a suitable Python if your system does not have one.
+
+To run Adder once without an install, use
+`uvx --from git+https://github.com/BTrey/adder.git adder`. To remove the
+command, use `uv tool uninstall adder`.
 
 ## Run
 
