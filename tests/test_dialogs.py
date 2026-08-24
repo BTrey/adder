@@ -153,3 +153,12 @@ async def test_the_base_dialog_has_no_accept_of_its_own() -> None:
 
     with pytest.raises(NotImplementedError):
         DialogScreen[None]().accept()
+
+
+async def test_the_keyboard_can_choose_and_accept() -> None:
+    """Arrow to a choice, press space to select it, tab to OK, press enter."""
+    app = DialogApp(FormatScreen(FORMATS["general"]))
+    async with app.run_test(size=SIZE) as pilot:
+        await pilot.press("down", "space", "tab", "enter")
+        await pilot.pause()
+        assert app.result == "currency"
