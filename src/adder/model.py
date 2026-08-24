@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
+from adder.formats import DEFAULT_FORMAT, FORMATS, ValueFormat
+
 
 class RowKind(Enum):
     """What a row of the List represents."""
@@ -42,6 +44,8 @@ class Session:
     rows: list[Row] = field(default_factory=list)
     value: float = 0.0
     variables: dict[str, float] = field(default_factory=dict)
+    value_format: ValueFormat = field(default_factory=lambda: FORMATS[DEFAULT_FORMAT])
+    """How the right column prints the Value."""
     effects: list[str] = field(default_factory=list)
     """Work a command asks the UI to do, such as showing the help. The UI takes
     each request after the line is evaluated."""
@@ -83,3 +87,4 @@ class Session:
         self.clear()
         self.variables.clear()
         self.effects.clear()
+        self.value_format = FORMATS[DEFAULT_FORMAT]

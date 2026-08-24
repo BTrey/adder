@@ -2,7 +2,7 @@
 
 import pytest
 
-from adder.commands import COMMANDS, HELP_EFFECT
+from adder.commands import COMMANDS, FORMAT_EFFECT, HELP_EFFECT
 from adder.model import Row, Session
 from adder.operators import OPERATORS, EvaluationError
 
@@ -88,3 +88,21 @@ def test_help_asks_the_ui_to_show_the_help_and_adds_no_row() -> None:
 def test_help_reports_a_rejected_argument() -> None:
     with pytest.raises(EvaluationError, match="help takes no argument"):
         run("@help me", Session())
+
+
+def test_format_is_registered() -> None:
+    assert COMMANDS["format"].name == "format"
+
+
+def test_format_asks_the_ui_for_the_dialog_and_adds_no_row() -> None:
+    session = Session()
+    session.add(Row(text="+ 5", value=5.0))
+    assert run("@format", session) is None
+    assert session.take_effects() == [FORMAT_EFFECT]
+    assert len(session.rows) == 1
+    assert session.value == 5.0
+
+
+def test_format_reports_a_rejected_argument() -> None:
+    with pytest.raises(EvaluationError, match="format takes no argument"):
+        run("@format currency", Session())

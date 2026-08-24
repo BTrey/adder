@@ -12,9 +12,11 @@ from textual.theme import Theme
 from textual.widgets import Input, Static
 
 from adder.cli import MAX_WIDTH, MIN_WIDTH
-from adder.commands import HELP_EFFECT
+from adder.commands import FORMAT_EFFECT, HELP_EFFECT
 from adder.config import DEFAULT_BAND, Palette
+from adder.dialogs import FormatScreen, PlacesScreen
 from adder.evaluator import evaluate_line
+from adder.formats import DEFAULT_PLACES, SPECIFIC, Fixed, ValueFormat, build_format
 from adder.formatting import build_list_text, build_value_text
 from adder.help import HelpScreen
 from adder.model import Session
@@ -102,17 +104,11 @@ class AdderApp(App[None]):
             self.value_column.display = False
 
     def get_theme_variable_defaults(self) -> dict[str, str]:
-        """Publish the palette to the stylesheet.
+        """Publish every palette color to the stylesheet as `$adder-<key>`.
 
         These are defaults, so they are in place before the theme is selected.
         """
-        return {
-            "adder-background": self.palette.background,
-            "adder-border": self.palette.border,
-            "adder-text": self.palette.text,
-            "adder-value": self.palette.value,
-            "adder-input": self.palette.input,
-        }
+        return {f"adder-{key}": color for key, color in self.palette.colors.items()}
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="columns"):
@@ -177,7 +173,13 @@ class AdderApp(App[None]):
             build_list_text(rows, colors, self.stripes, self._column_width(self.list_column))
         )
         self.query_one("#value-text", Static).update(
-            build_value_text(rows, colors, self.stripes, self._column_width(self.value_column))
+            build_value_text(
+                rows,
+                colors,
+                self.stripes,
+                self._column_width(self.value_column),
+                self.session.value_format,
+            )
         )
 
     @staticmethod
@@ -208,5 +210,36 @@ class AdderApp(App[None]):
         """Open the help dialog."""
         self.push_screen(HelpScreen(self.palette.colors))
 
-    EFFECTS: ClassVar[dict[str, Callable[[AdderApp], None]]] = {HELP_EFFECT: show_help}
+    def show_format(self) -> None:
+        """Ask which format the Value column should use."""
+        self.push_screen(FormatScreen(self.session.value_format), self._chose_format)
+
+    def _chose_format(self, key: str | None) -> None:
+        """Apply the chosen format, or ask for the decimal places first."""
+        if key is None:
+            return
+        if key == SPECIFIC:
+            self.push_screen(PlacesScreen(self._places_in_use()), self._chose_places)
+            return
+        self.use_format(build_format(key))
+
+    def _chose_places(self, places: int | None) -> None:
+        """Apply the specific format the user asked for."""
+        if places is not None:
+            self.use_format(build_format(SPECIFIC, places))
+
+    def _places_in_use(self) -> int:
+        """The decimal places to start the second dialog on."""
+        value_format = self.session.value_format
+        return value_format.places if isinstance(value_format, Fixed) else DEFAULT_PLACES
+
+    def use_format(self, value_format: ValueFormat) -> None:
+        """Print the Value column with a new format."""
+        self.session.value_format = value_format
+        self.refresh_columns()
+
+    EFFECTS: ClassVar[dict[str, Callable[[AdderApp], None]]] = {
+        HELP_EFFECT: show_help,
+        FORMAT_EFFECT: show_format,
+    }
     """What each requested effect does. A new effect is one more entry here."""
