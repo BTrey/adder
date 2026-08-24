@@ -26,6 +26,11 @@ class Command(ABC):
         Raise EvaluationError for anything the user got wrong.
         """
 
+    def reject_argument(self, argument: str) -> None:
+        """Raise EvaluationError if the user typed an argument."""
+        if argument:
+            raise EvaluationError(f"{self.name} takes no argument")
+
 
 COMMANDS: dict[str, Command] = {}
 
@@ -47,9 +52,22 @@ class Clear(Command):
 
     def execute(self, session: Session, text: str, argument: str) -> Row | None:
         """Clear the session. This adds no row, so the command leaves no trace."""
-        if argument:
-            raise EvaluationError("clear takes no argument")
+        self.reject_argument(argument)
         session.clear()
+        return None
+
+
+@register("zeroize")
+class Zeroize(Command):
+    """Empty the List, reset the Value, and drop every variable.
+
+    Adder is then in the same state as a program that has just started.
+    """
+
+    def execute(self, session: Session, text: str, argument: str) -> Row | None:
+        """Reset the session. This adds no row, so the command leaves no trace."""
+        self.reject_argument(argument)
+        session.reset()
         return None
 
 

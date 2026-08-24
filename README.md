@@ -58,7 +58,8 @@ optional, so `+100` and `+ 100` do the same thing.
 | `/ 3` | Divide the Value by 3. |
 | `^ 2` | Raise the Value to the power of 2. |
 | `$rate = 0.07` | Set the variable `rate` to 0.07. The `=` is optional. |
-| `@clear` | Empty the List and reset the Value to 0. |
+| `@clear` | Empty the List and reset the Value to 0. The variables stay. |
+| `@zeroize` | Empty the List, reset the Value to 0, and drop every variable. Adder is then in the same state as a program that has just started. |
 | `hello` | Add a text row. The Value does not change. |
 
 An operand is a number or a variable. `+ $rate` adds the value of `rate`. An

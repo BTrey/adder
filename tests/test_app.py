@@ -66,6 +66,19 @@ async def test_clear_empties_both_columns() -> None:
         assert app.session.value == 0.0
 
 
+async def test_zeroize_resets_the_app_to_a_fresh_state() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "$var1 5", "+ $var1", "note", "@zeroize")
+        assert column_text(app, "#list-text") == ""
+        assert column_text(app, "#value-text") == ""
+        assert app.session.value == 0.0
+        assert app.session.variables == {}
+        await type_lines(app, pilot, "+ $var1")
+        assert column_text(app, "#list-text") == "+ $var1  unknown variable: var1"
+        assert app.session.value == 0.0
+
+
 async def test_an_error_row_keeps_the_value() -> None:
     app = AdderApp()
     async with app.run_test(size=SIZE) as pilot:
