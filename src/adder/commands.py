@@ -37,6 +37,9 @@ COMMANDS: dict[str, Command] = {}
 HELP_EFFECT = "help"
 """The effect the UI runs to show the help dialog."""
 
+FORMAT_EFFECT = "format"
+"""The effect the UI runs to show the format dialog."""
+
 
 def register(name: str) -> Callable[[type[Command]], type[Command]]:
     """Register a command class under its name."""
@@ -85,6 +88,17 @@ class Help(Command):
         """Ask the UI for the help dialog. The List and the Value do not change."""
         self.reject_argument(argument)
         session.request_effect(HELP_EFFECT)
+        return None
+
+
+@register("format")
+class Format(Command):
+    """Choose how the Value column prints."""
+
+    def execute(self, session: Session, text: str, argument: str) -> Row | None:
+        """Ask the UI for the format dialog. The List and the Value do not change."""
+        self.reject_argument(argument)
+        session.request_effect(FORMAT_EFFECT)
         return None
 
 

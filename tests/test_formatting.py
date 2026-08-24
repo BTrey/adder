@@ -1,10 +1,8 @@
 """Tests for value formatting and the two column renderables."""
 
-import math
-
 import pytest
 
-from adder.formatting import build_list_text, build_value_text, format_value
+from adder.formatting import build_list_text, build_value_text
 from adder.model import Row, RowKind
 from adder.stripes import Stripes
 
@@ -14,31 +12,6 @@ COLORS = {
     "arithmetic": "#2aa198",
     "error": "#dc322f",
 }
-
-
-@pytest.mark.parametrize(
-    ("value", "expected"),
-    [
-        (100.0, "100"),
-        (-100.0, "-100"),
-        (0.0, "0"),
-        (-0.0, "0"),
-        (0.5, "0.5"),
-        (1 / 3, "0.3333333333"),
-        (0.1 + 0.2, "0.3"),
-        (1e-12, "1e-12"),
-        (1e300, "1e+300"),
-        (1e20, "1e+20"),
-    ],
-)
-def test_format_value(value: float, expected: str) -> None:
-    assert format_value(value) == expected
-
-
-def test_format_value_handles_infinity_and_nan() -> None:
-    assert format_value(math.inf) == "inf"
-    assert format_value(-math.inf) == "-inf"
-    assert format_value(math.nan) == "nan"
 
 
 def test_build_list_text_one_line_per_row() -> None:
@@ -128,3 +101,12 @@ def test_plain_stripes_add_no_background() -> None:
     plain = Stripes(shade="#002b36", background="#002b36")
     text = build_list_text([Row(text="a"), Row(text="b")], COLORS, stripes=plain, width=3)
     assert {str(span.style) for span in text.spans} == {"#839496"}
+
+
+def test_the_value_format_decides_the_text() -> None:
+    from adder.formats import FORMATS, Fixed
+
+    rows = [Row(text="+ 1", value=1.5)]
+    assert build_value_text(rows, COLORS).plain == "1.5 "
+    assert build_value_text(rows, COLORS, value_format=FORMATS["currency"]).plain == "$1.50 "
+    assert build_value_text(rows, COLORS, value_format=Fixed(3)).plain == "1.500 "

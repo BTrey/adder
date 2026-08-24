@@ -62,6 +62,7 @@ optional, so `+100` and `+ 100` do the same thing.
 | `@clear` | Empty the List and reset the Value to 0. The variables stay. |
 | `@zeroize` | Empty the List, reset the Value to 0, and drop every variable. Adder is then in the same state as a program that has just started. |
 | `@help` | Show the help dialog. Press Escape, Enter, or q to close it, or click it. |
+| `@format` | Choose how the Value column prints. |
 | `hello` | Add a text row. The Value does not change. |
 
 An operand is a number or a variable. `+ $rate` adds the value of `rate`. An
@@ -70,6 +71,27 @@ row.
 
 A line that cannot be evaluated becomes an error row. The row shows the line and
 the reason, and the Value does not change. `/ 0` is an example.
+
+## Value formats
+
+`@format` opens a dialog with four choices. OK applies the choice. Cancel, or
+Escape, changes nothing.
+
+| Choice | 1234.5 prints as | 0.5 prints as |
+| --- | --- | --- |
+| General | `1234.5` | `0.5` |
+| Currency | `$1234.50` | `$0.50` |
+| Decimal | `1234.50` | `0.50` |
+| Specific | as many decimal places as you ask for | |
+
+Currency uses a dollar sign, a leading zero, and two decimal places. A negative
+amount gets a leading minus sign, as in `-$5.00`. There is no thousands
+separator.
+
+Specific opens a second dialog that asks for the number of decimal places, from
+0 to 10.
+
+The format stays until you change it. `@zeroize` puts it back to General.
 
 ## Colors
 
@@ -151,6 +173,8 @@ copy. `uv run python -m adder` does the same thing.
 | `src/adder/app.py` | The Textual app. |
 | `src/adder/help.py` | The help text and the help dialog. |
 | `src/adder/stripes.py` | Which rows are shaded. |
+| `src/adder/formats.py` | How the Value prints. |
+| `src/adder/dialogs.py` | The format dialog and the decimal places dialog. |
 
 To add an operator, add one class to `src/adder/operators.py`:
 
@@ -168,7 +192,10 @@ class Percent(ArithmeticOperator):
 To add a command, add one class to `src/adder/commands.py` with the `@register`
 decorator and an `execute` method. A command that returns `None` adds no row.
 
-The help dialog is built from the two registries, so a new operator or command
+To add a Value format, add one class to `src/adder/formats.py` with the
+`@register` decorator and a `format` method, then add a `Choice` for it.
+
+The help dialog is built from the registries, so a new operator or command
 shows up there with no other change. The dialog reads the `usage` attribute and
 the first line of the class docstring, so keep both short.
 

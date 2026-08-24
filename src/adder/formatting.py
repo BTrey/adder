@@ -2,37 +2,18 @@
 
 from __future__ import annotations
 
-import math
 from collections.abc import Mapping, Sequence
 
 from rich.console import JustifyMethod
 from rich.text import Text
 
+from adder.formats import DEFAULT_FORMAT, FORMATS, ValueFormat
 from adder.model import Row
 from adder.stripes import Stripes
-
-INTEGER_LIMIT = 1e15
-"""Above this magnitude a float can no longer hold every integer, so use exponent form."""
-
-SIGNIFICANT_DIGITS = 10
-"""Digits kept for a value that is not a whole number. This hides float noise."""
 
 GUTTER = " "
 """One column of space at the outer edge of a row. The stripe covers it too, so
 the gutter belongs to the text and not to the CSS padding."""
-
-
-def format_value(value: float) -> str:
-    """Format the Value for the right column.
-
-    A whole number prints without a decimal point. Any other number prints with
-    up to 10 significant digits.
-    """
-    if math.isnan(value) or math.isinf(value):
-        return str(value)
-    if value == int(value) and abs(value) < INTEGER_LIMIT:
-        return str(int(value))
-    return f"{value:.{SIGNIFICANT_DIGITS}g}"
 
 
 def build_list_text(
@@ -54,15 +35,17 @@ def build_value_text(
     colors: Mapping[str, str],
     stripes: Stripes | None = None,
     width: int = 0,
+    value_format: ValueFormat | None = None,
 ) -> Text:
     """Build the right column: the new Value, or a blank line if it did not change.
 
     The padding puts the Value at the right of the column, so the stripe of a
     row covers the whole column.
     """
+    value_format = value_format or FORMATS[DEFAULT_FORMAT]
     text = _new_text(justify="right")
     for index, row in enumerate(rows):
-        line = "" if row.value is None else format_value(row.value)
+        line = "" if row.value is None else value_format.format(row.value)
         _line(text, index, f"{line}{GUTTER}".rjust(width), _color(colors, "value"), stripes)
     return text
 

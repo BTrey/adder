@@ -9,6 +9,8 @@ from textual.widgets import Input, Static
 
 from adder.app import AdderApp
 from adder.config import Palette
+from adder.dialogs import FormatScreen, PlacesScreen
+from adder.formats import FORMATS, Fixed
 from adder.help import HelpScreen
 
 SIZE = (80, 24)
@@ -276,6 +278,94 @@ async def test_a_resize_repads_the_rows() -> None:
         await pilot.resize_terminal(60, 20)
         await pilot.pause()
         assert background_at(app, app.list_column.content_size.width, 2) == "#073642"
+
+
+async def test_the_format_command_opens_the_dialog() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "+ 1.5", "@format")
+        assert isinstance(app.screen, FormatScreen)
+        assert app.session.rows[-1].text == "+ 1.5"
+
+
+async def test_choosing_currency_reprints_the_value_column() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "+ 1.5", "@format")
+        await pilot.click("#choice-currency")
+        await pilot.click("#ok")
+        await pilot.pause()
+        assert column_text(app, "#value-text") == "$1.50"
+        assert app.session.value_format is FORMATS["currency"]
+
+
+async def test_cancel_leaves_the_format_alone() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "+ 1.5", "@format")
+        await pilot.click("#choice-currency")
+        await pilot.click("#cancel")
+        await pilot.pause()
+        assert column_text(app, "#value-text") == "1.5"
+        assert app.session.value_format == FORMATS["general"]
+
+
+async def test_the_specific_choice_opens_the_places_dialog() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "+ 1.5", "@format")
+        await pilot.click("#choice-specific")
+        await pilot.click("#ok")
+        await pilot.pause()
+        assert isinstance(app.screen, PlacesScreen)
+        app.screen.query_one("#places", Input).value = "4"
+        await pilot.click("#ok")
+        await pilot.pause()
+        assert column_text(app, "#value-text") == "1.5000"
+        assert app.session.value_format == Fixed(4)
+
+
+async def test_cancelling_the_places_dialog_leaves_the_format_alone() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "+ 1.5", "@format")
+        await pilot.click("#choice-specific")
+        await pilot.click("#ok")
+        await pilot.pause()
+        await pilot.click("#cancel")
+        await pilot.pause()
+        assert column_text(app, "#value-text") == "1.5"
+        assert app.session.value_format == FORMATS["general"]
+
+
+async def test_the_format_dialog_uses_the_palette() -> None:
+    app = AdderApp(palette=Palette(border="#202020"))
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "@format")
+        dialog = app.screen.query_one("#dialog")
+        assert dialog.styles.border_top[1].hex.lower() == "#202020"
+
+
+async def test_a_new_format_stays_for_later_rows() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "@format")
+        await pilot.click("#choice-currency")
+        await pilot.click("#ok")
+        await pilot.pause()
+        await type_lines(app, pilot, "+ 2", "+ 0.5")
+        assert column_text(app, "#value-text") == "$2.00\n$2.50"
+
+
+async def test_zeroize_puts_the_format_back_to_general() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "@format")
+        await pilot.click("#choice-currency")
+        await pilot.click("#ok")
+        await pilot.pause()
+        await type_lines(app, pilot, "@zeroize", "+ 1.5")
+        assert column_text(app, "#value-text") == "1.5"
 
 
 async def test_the_panels_are_named() -> None:
