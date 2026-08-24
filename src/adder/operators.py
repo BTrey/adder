@@ -31,6 +31,8 @@ class Operator(ABC):
     symbol: str = ""
     name: str = ""
     color_key: str = "text"
+    usage: str = ""
+    """An example line, shown in the help dialog."""
 
     @abstractmethod
     def evaluate(self, session: Session, text: str, operand: str) -> Row | None:
@@ -97,6 +99,7 @@ class Add(ArithmeticOperator):
     """Add the operand to the Value."""
 
     name = "add"
+    usage = "+ 100"
 
     def apply(self, value: float, operand: float) -> float:
         return value + operand
@@ -107,6 +110,7 @@ class Subtract(ArithmeticOperator):
     """Subtract the operand from the Value."""
 
     name = "subtract"
+    usage = "- 100"
 
     def apply(self, value: float, operand: float) -> float:
         return value - operand
@@ -117,6 +121,7 @@ class Multiply(ArithmeticOperator):
     """Multiply the Value by the operand."""
 
     name = "multiply"
+    usage = "* 3"
 
     def apply(self, value: float, operand: float) -> float:
         return value * operand
@@ -127,6 +132,7 @@ class Divide(ArithmeticOperator):
     """Divide the Value by the operand."""
 
     name = "divide"
+    usage = "/ 3"
 
     def apply(self, value: float, operand: float) -> float:
         if operand == 0:
@@ -139,6 +145,7 @@ class Power(ArithmeticOperator):
     """Raise the Value to the power of the operand."""
 
     name = "power"
+    usage = "^ 2"
     color_key = "exponent"
 
     def apply(self, value: float, operand: float) -> float:
@@ -155,12 +162,14 @@ class Power(ArithmeticOperator):
 
 @register("$")
 class Assign(Operator):
-    """Set a variable. `$name 5` and `$name = 5` are the same.
+    """Set a variable. The equals sign is optional.
 
-    An assignment does not change the Value, so the right column stays blank.
+    `$name 5` and `$name = 5` are the same. An assignment does not change the
+    Value, so the right column stays blank.
     """
 
     name = "assign"
+    usage = "$rate = 0.07"
     color_key = "variable"
 
     def evaluate(self, session: Session, text: str, operand: str) -> Row | None:
