@@ -6,7 +6,7 @@ import sys
 
 from adder.app import AdderApp
 from adder.cli import PRINT_CONFIG, parse_args
-from adder.config import DEFAULT_CONFIG_TEXT, ConfigError, load_palette
+from adder.config import DEFAULT_CONFIG_TEXT, ConfigError, load_appearance
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -16,9 +16,9 @@ def main(argv: list[str] | None = None) -> int:
         print(DEFAULT_CONFIG_TEXT, end="")
         return 0
     try:
-        palette = load_palette(arguments.config)
+        appearance = load_appearance(arguments.config)
     except ConfigError as error:
         print(f"adder: {error}", file=sys.stderr)
         return 2
-    AdderApp(width=arguments.width, palette=palette).run()
+    AdderApp(width=arguments.width, palette=appearance.palette, band=appearance.band).run()
     return 0

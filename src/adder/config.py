@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import configparser
 import os
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 
 from textual.color import Color, ColorParseError
@@ -12,8 +12,11 @@ from textual.color import Color, ColorParseError
 CONFIG_DIRECTORY = "adder"
 CONFIG_FILENAME = "adder.conf"
 
+DEFAULT_BAND = 1
+"""Rows in one stripe. One row means every other row is shaded."""
+
 SECTIONS: dict[str, tuple[str, ...]] = {
-    "colors": ("background", "border", "text", "value", "input"),
+    "colors": ("background", "stripe", "border", "text", "value", "input"),
     "operators": ("arithmetic", "exponent", "variable", "command", "error"),
 }
 
@@ -27,6 +30,7 @@ class Palette:  # pylint: disable=too-many-instance-attributes
     """Every color the app uses. The defaults are solarized dark."""
 
     background: str = "#002b36"
+    stripe: str = "#073642"
     border: str = "#586e75"
     text: str = "#839496"
     value: str = "#268bd2"
@@ -39,8 +43,16 @@ class Palette:  # pylint: disable=too-many-instance-attributes
 
     @property
     def colors(self) -> dict[str, str]:
-        """The palette as a plain mapping, for the row spans."""
+        """The colors as a plain mapping, for the row spans."""
         return {field.name: getattr(self, field.name) for field in fields(self)}
+
+
+@dataclass(frozen=True)
+class Appearance:
+    """How Adder looks: the colors and the height of one stripe."""
+
+    palette: Palette = field(default_factory=Palette)
+    band: int = DEFAULT_BAND
 
 
 DEFAULT_CONFIG_TEXT = """\
@@ -53,6 +65,9 @@ DEFAULT_CONFIG_TEXT = """\
 [colors]
 # base03 - the app background
 background = #002b36
+# base02 - the shaded rows of the striped background. Set it to the same color
+# as the background to turn the stripes off.
+stripe = #073642
 # base01 - the panel borders
 border = #586e75
 # base0 - a row with no operator
@@ -73,6 +88,10 @@ variable = #b58900
 command = #859900
 # red - a row that failed
 error = #dc322f
+
+[stripes]
+# Rows in one stripe. 1 shades every other row.
+band = 1
 """
 
 
@@ -94,8 +113,8 @@ def _read(path: Path) -> configparser.ConfigParser:
     return parser
 
 
-def load_palette(path: Path | None = None) -> Palette:
-    """Load the palette.
+def load_appearance(path: Path | None = None) -> Appearance:
+    """Load the colors and the stripe height.
 
     With a path, the file must exist. Without a path, the app reads the default
     config file if it is there, and uses the built-in defaults if it is not.
@@ -103,7 +122,7 @@ def load_palette(path: Path | None = None) -> Palette:
     if path is None:
         path = default_config_path()
         if not path.is_file():
-            return Palette()
+            return Appearance()
     elif not path.is_file():
         raise ConfigError(f"config file not found: {path}")
 
@@ -120,4 +139,19 @@ def load_palette(path: Path | None = None) -> Palette:
             except ColorParseError as exc:
                 raise ConfigError(f"bad color for {key}: {raw}") from exc
             values[key] = raw
-    return Palette(**values)
+    band = parser.get("stripes", "band", fallback=None)
+    return Appearance(
+        palette=Palette(**values),
+        band=DEFAULT_BAND if band is None else _read_band(band.strip()),
+    )
+
+
+def _read_band(raw: str) -> int:
+    """Read the height of one stripe, in rows."""
+    try:
+        band = int(raw)
+    except ValueError as exc:
+        raise ConfigError(f"band must be a whole number: {raw}") from exc
+    if band < 1:
+        raise ConfigError(f"band must be 1 or more: {band}")
+    return band
