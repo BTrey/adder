@@ -66,6 +66,14 @@ def test_an_assignment_row_leaves_the_right_column_blank() -> None:
     assert session.get_variable("var1") == 5.0
 
 
+def test_zeroize_resets_everything_and_adds_no_row() -> None:
+    session = Session()
+    evaluate_line(session, "$var1 5")
+    evaluate_line(session, "+ 5")
+    assert evaluate_line(session, "@zeroize") is None
+    assert session == Session()
+
+
 def test_clear_empties_the_list_and_adds_no_row() -> None:
     session = Session()
     evaluate_line(session, "+ 5")

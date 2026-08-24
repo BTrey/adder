@@ -46,3 +46,27 @@ def test_missing_command_name_raises_evaluation_error() -> None:
 def test_clear_reports_a_rejected_argument() -> None:
     with pytest.raises(EvaluationError, match="takes no argument"):
         run("@clear now", Session())
+
+
+def test_zeroize_is_registered() -> None:
+    assert COMMANDS["zeroize"].name == "zeroize"
+
+
+def test_zeroize_clears_the_list_the_value_and_the_variables() -> None:
+    session = Session()
+    session.add(Row(text="+ 5", value=5.0))
+    session.set_variable("var1", 2.0)
+    assert run("@zeroize", session) is None
+    assert session == Session()
+
+
+def test_zeroize_reports_a_rejected_argument() -> None:
+    with pytest.raises(EvaluationError, match="zeroize takes no argument"):
+        run("@zeroize now", Session())
+
+
+def test_clear_keeps_the_variables() -> None:
+    session = Session()
+    session.set_variable("var1", 2.0)
+    run("@clear", session)
+    assert session.variables == {"var1": 2.0}

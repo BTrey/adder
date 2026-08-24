@@ -61,3 +61,21 @@ def test_session_clear_resets_everything_but_variables() -> None:
     assert session.rows == []
     assert session.value == 0.0
     assert session.variables == {"var1": 2.0}
+
+
+def test_session_reset_clears_everything_including_variables() -> None:
+    session = Session()
+    session.add(Row(text="+ 5", value=5.0))
+    session.set_variable("var1", 2.0)
+    session.reset()
+    assert session.rows == []
+    assert session.value == 0.0
+    assert session.variables == {}
+
+
+def test_session_reset_matches_a_new_session() -> None:
+    session = Session()
+    session.add(Row(text="+ 5", value=5.0))
+    session.set_variable("var1", 2.0)
+    session.reset()
+    assert session == Session()

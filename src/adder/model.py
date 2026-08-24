@@ -61,3 +61,11 @@ class Session:
         """Empty the List and reset the Value. Variables stay."""
         self.rows.clear()
         self.value = 0.0
+
+    def reset(self) -> None:
+        """Empty the List, reset the Value, and drop every variable.
+
+        The session is then the same as a session that has just started.
+        """
+        self.clear()
+        self.variables.clear()
