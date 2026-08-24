@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import pytest
 from rich.text import Text
+from textual.containers import VerticalScroll
 from textual.widgets import Input, Static
 
 from adder.app import AdderApp
 from adder.config import Palette
+from adder.help import HelpScreen
 
 SIZE = (80, 24)
 
@@ -145,6 +147,79 @@ async def test_the_right_column_follows_the_left_column_scroll() -> None:
         app.list_column.scroll_to(y=0, animate=False)
         await pilot.pause()
         assert app.value_column.scroll_y == 0
+
+
+async def test_the_help_command_opens_the_dialog() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "@help")
+        assert isinstance(app.screen, HelpScreen)
+        help_text = app.screen.query_one("#help-text", Static).content
+        assert isinstance(help_text, Text)
+        assert "Operators" in help_text.plain
+        assert "@zeroize" in help_text.plain
+        assert app.session.rows == []
+        assert app.session.effects == []
+
+
+async def test_the_help_dialog_closes_and_returns_the_focus() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "@help")
+        await pilot.press("escape")
+        await pilot.pause()
+        assert not isinstance(app.screen, HelpScreen)
+        assert app.focused is app.query_one("#entry", Input)
+        await type_lines(app, pilot, "+ 7")
+        assert app.session.value == 7.0
+
+
+async def test_a_click_closes_the_help_dialog() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "@help")
+        await pilot.click("#help-dialog")
+        await pilot.pause()
+        assert not isinstance(app.screen, HelpScreen)
+
+
+async def test_an_effect_with_no_handler_is_ignored() -> None:
+    app = AdderApp()
+    async with app.run_test(size=SIZE) as pilot:
+        app.session.request_effect("not-a-real-effect")
+        app.run_effects()
+        await pilot.pause()
+        assert not isinstance(app.screen, HelpScreen)
+        assert app.session.effects == []
+
+
+async def test_the_help_dialog_fits_a_wide_terminal() -> None:
+    app = AdderApp()
+    async with app.run_test(size=(88, 34)) as pilot:
+        await type_lines(app, pilot, "@help")
+        dialog = app.screen.query_one("#help-dialog", VerticalScroll)
+        assert dialog.show_vertical_scrollbar is False
+        assert dialog.show_horizontal_scrollbar is False
+
+
+async def test_a_narrow_terminal_wraps_and_scrolls_the_help() -> None:
+    app = AdderApp()
+    async with app.run_test(size=(58, 20)) as pilot:
+        await type_lines(app, pilot, "@help")
+        dialog = app.screen.query_one("#help-dialog", VerticalScroll)
+        assert dialog.show_horizontal_scrollbar is False
+        assert dialog.show_vertical_scrollbar is True
+        await pilot.press("pagedown")
+        await pilot.pause()
+        assert dialog.scroll_y > 0
+
+
+async def test_the_help_dialog_uses_the_palette() -> None:
+    app = AdderApp(palette=Palette(border="#202020"))
+    async with app.run_test(size=SIZE) as pilot:
+        await type_lines(app, pilot, "@help")
+        dialog = app.screen.query_one("#help-dialog")
+        assert dialog.styles.border_top[1].hex.lower() == "#202020"
 
 
 async def test_the_panels_are_named() -> None:

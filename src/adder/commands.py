@@ -34,6 +34,9 @@ class Command(ABC):
 
 COMMANDS: dict[str, Command] = {}
 
+HELP_EFFECT = "help"
+"""The effect the UI runs to show the help dialog."""
+
 
 def register(name: str) -> Callable[[type[Command]], type[Command]]:
     """Register a command class under its name."""
@@ -48,7 +51,10 @@ def register(name: str) -> Callable[[type[Command]], type[Command]]:
 
 @register("clear")
 class Clear(Command):
-    """Empty the List and reset the Value. The `@clear` line does not remain."""
+    """Empty the List and reset the Value. The variables stay.
+
+    The `@clear` line itself does not remain in the List.
+    """
 
     def execute(self, session: Session, text: str, argument: str) -> Row | None:
         """Clear the session. This adds no row, so the command leaves no trace."""
@@ -59,7 +65,7 @@ class Clear(Command):
 
 @register("zeroize")
 class Zeroize(Command):
-    """Empty the List, reset the Value, and drop every variable.
+    """Empty the List and the variables, and reset the Value.
 
     Adder is then in the same state as a program that has just started.
     """
@@ -71,12 +77,24 @@ class Zeroize(Command):
         return None
 
 
+@register("help")
+class Help(Command):
+    """Show the help dialog."""
+
+    def execute(self, session: Session, text: str, argument: str) -> Row | None:
+        """Ask the UI for the help dialog. The List and the Value do not change."""
+        self.reject_argument(argument)
+        session.request_effect(HELP_EFFECT)
+        return None
+
+
 @register_operator("@")
 class RunCommand(Operator):
     """Look up a command by name and run it."""
 
     name = "command"
     color_key = "command"
+    usage = "@name"
 
     def evaluate(self, session: Session, text: str, operand: str) -> Row | None:
         name, _, argument = operand.strip().partition(" ")

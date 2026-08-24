@@ -42,6 +42,9 @@ class Session:
     rows: list[Row] = field(default_factory=list)
     value: float = 0.0
     variables: dict[str, float] = field(default_factory=dict)
+    effects: list[str] = field(default_factory=list)
+    """Work a command asks the UI to do, such as showing the help. The UI takes
+    each request after the line is evaluated."""
 
     def add(self, row: Row) -> None:
         """Append a row and adopt its Value if it changed the Value."""
@@ -57,6 +60,16 @@ class Session:
         """Read a variable, or None if it is not set."""
         return self.variables.get(name)
 
+    def request_effect(self, name: str) -> None:
+        """Ask the UI to do something after this line."""
+        self.effects.append(name)
+
+    def take_effects(self) -> list[str]:
+        """Return the pending requests and empty the queue."""
+        effects = list(self.effects)
+        self.effects.clear()
+        return effects
+
     def clear(self) -> None:
         """Empty the List and reset the Value. Variables stay."""
         self.rows.clear()
@@ -69,3 +82,4 @@ class Session:
         """
         self.clear()
         self.variables.clear()
+        self.effects.clear()

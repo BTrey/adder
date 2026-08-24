@@ -79,3 +79,22 @@ def test_session_reset_matches_a_new_session() -> None:
     session.set_variable("var1", 2.0)
     session.reset()
     assert session == Session()
+
+
+def test_session_starts_with_no_effects() -> None:
+    assert Session().effects == []
+
+
+def test_take_effects_returns_and_empties_the_requests() -> None:
+    session = Session()
+    session.request_effect("help")
+    session.request_effect("help")
+    assert session.take_effects() == ["help", "help"]
+    assert session.effects == []
+
+
+def test_reset_drops_a_pending_effect() -> None:
+    session = Session()
+    session.request_effect("help")
+    session.reset()
+    assert session == Session()

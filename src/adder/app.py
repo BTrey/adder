@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import ClassVar
 
 from textual.app import App, ComposeResult
@@ -11,9 +12,11 @@ from textual.theme import Theme
 from textual.widgets import Input, Static
 
 from adder.cli import MAX_WIDTH, MIN_WIDTH
+from adder.commands import HELP_EFFECT
 from adder.config import Palette
 from adder.evaluator import evaluate_line
 from adder.formatting import build_list_text, build_value_text
+from adder.help import HelpScreen
 from adder.model import Session
 
 THEME_NAME = "adder"
@@ -172,3 +175,18 @@ class AdderApp(App[None]):
         event.input.value = ""
         self.refresh_columns()
         self.list_column.scroll_end(animate=False)
+        self.run_effects()
+
+    def run_effects(self) -> None:
+        """Do the work the line asked the UI for, such as showing the help."""
+        for effect in self.session.take_effects():
+            handler = self.EFFECTS.get(effect)
+            if handler is not None:
+                handler(self)
+
+    def show_help(self) -> None:
+        """Open the help dialog."""
+        self.push_screen(HelpScreen(self.palette.colors))
+
+    EFFECTS: ClassVar[dict[str, Callable[[AdderApp], None]]] = {HELP_EFFECT: show_help}
+    """What each requested effect does. A new effect is one more entry here."""

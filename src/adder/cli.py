@@ -16,7 +16,7 @@ PROGRAM = "adder"
 DESCRIPTION = "A running-tape calculator and notepad for the terminal."
 EPILOG = """\
 operators: + - * / ^ (arithmetic), $name = 5 (variable)
-commands:  @clear (keep the variables), @zeroize (drop them too)
+commands:  @help (show the help), @clear, @zeroize
 """
 
 

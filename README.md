@@ -41,7 +41,8 @@ adder [-w N] [-c [PATH]]
 | `-c PATH`, `--config PATH` | Read the colors from PATH. |
 | `-c`, `--config` | Print the default config file and exit. |
 
-Type a line and press Enter. Press Ctrl+Q to quit.
+Type a line and press Enter. Type `@help` for the help dialog. Press Ctrl+Q to
+quit.
 
 A width of 0 hides the List column. A width of 100 hides the Value column.
 
@@ -60,6 +61,7 @@ optional, so `+100` and `+ 100` do the same thing.
 | `$rate = 0.07` | Set the variable `rate` to 0.07. The `=` is optional. |
 | `@clear` | Empty the List and reset the Value to 0. The variables stay. |
 | `@zeroize` | Empty the List, reset the Value to 0, and drop every variable. Adder is then in the same state as a program that has just started. |
+| `@help` | Show the help dialog. Press Escape, Enter, or q to close it, or click it. |
 | `hello` | Add a text row. The Value does not change. |
 
 An operand is a number or a variable. `+ $rate` adds the value of `rate`. An
@@ -125,6 +127,7 @@ copy. `uv run python -m adder` does the same thing.
 | `src/adder/evaluator.py` | Line parsing and dispatch. |
 | `src/adder/formatting.py` | The two column renderables. |
 | `src/adder/app.py` | The Textual app. |
+| `src/adder/help.py` | The help text and the help dialog. |
 
 To add an operator, add one class to `src/adder/operators.py`:
 
@@ -141,6 +144,15 @@ class Percent(ArithmeticOperator):
 
 To add a command, add one class to `src/adder/commands.py` with the `@register`
 decorator and an `execute` method. A command that returns `None` adds no row.
+
+The help dialog is built from the two registries, so a new operator or command
+shows up there with no other change. The dialog reads the `usage` attribute and
+the first line of the class docstring, so keep both short.
+
+A command that needs the UI to do something asks for an effect, as `@help`
+does with `session.request_effect(HELP_EFFECT)`. The app runs each request
+after the line is evaluated. `AdderApp.EFFECTS` maps an effect name to the
+method that does the work.
 
 Raise `EvaluationError` for anything the user can get wrong. The evaluator turns
 it into an error row, so no typed line can stop the program.
