@@ -90,7 +90,8 @@ parse, stops the program with status 2.
 
 | Section | Key | What it colors |
 | --- | --- | --- |
-| `colors` | `background` | The window. |
+| `colors` | `background` | The window, and the plain rows. |
+| `colors` | `stripe` | The shaded rows. |
 | `colors` | `border` | The panel borders. |
 | `colors` | `text` | A row with no operator. |
 | `colors` | `value` | The right column. |
@@ -101,7 +102,28 @@ parse, stops the program with status 2.
 | `operators` | `command` | The `@` rows. |
 | `operators` | `error` | A row that failed. |
 
+The `stripes` section has one key, `band`, which sets the height of one stripe
+in rows. The default is 1, which shades every other row.
+
+```ini
+[stripes]
+band = 2
+```
+
+To turn the stripes off, set `stripe` to the same color as `background`.
+
 The defaults are solarized dark.
+
+## Stripes
+
+Adder shades every other row of the List and the Value, like the bands of a
+repeating linear gradient. The two columns use the same pattern, so a shaded
+row is one band across both columns. This makes it easy to read a row from the
+List to its Value.
+
+Textual CSS has no `linear-gradient`, and a background painted on the screen
+does not show through the widgets above it. Each row therefore carries its own
+background color. A stripe stays with its row while the List scrolls.
 
 ## Develop
 
@@ -128,6 +150,7 @@ copy. `uv run python -m adder` does the same thing.
 | `src/adder/formatting.py` | The two column renderables. |
 | `src/adder/app.py` | The Textual app. |
 | `src/adder/help.py` | The help text and the help dialog. |
+| `src/adder/stripes.py` | Which rows are shaded. |
 
 To add an operator, add one class to `src/adder/operators.py`:
 

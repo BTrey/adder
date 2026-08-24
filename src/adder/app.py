@@ -13,11 +13,12 @@ from textual.widgets import Input, Static
 
 from adder.cli import MAX_WIDTH, MIN_WIDTH
 from adder.commands import HELP_EFFECT
-from adder.config import Palette
+from adder.config import DEFAULT_BAND, Palette
 from adder.evaluator import evaluate_line
 from adder.formatting import build_list_text, build_value_text
 from adder.help import HelpScreen
 from adder.model import Session
+from adder.stripes import Stripes
 
 THEME_NAME = "adder"
 
@@ -49,7 +50,6 @@ Screen {
 
 #list-text {
     width: auto;
-    padding: 0 1;
 }
 
 #value-text {
@@ -57,7 +57,7 @@ Screen {
     text-align: right;
     /* The bottom row matches the row the horizontal scrollbar takes from the
        left column, so both columns can scroll to the same last row. */
-    padding: 0 1 1 0;
+    padding-bottom: 1;
 }
 
 #entry {
@@ -80,10 +80,12 @@ class AdderApp(App[None]):
         self,
         width: int = 75,
         palette: Palette | None = None,
+        band: int = DEFAULT_BAND,
         session: Session | None = None,
     ) -> None:
         self.column_width = width
         self.palette = palette or Palette()
+        self.stripes = Stripes.from_palette(self.palette, band)
         self.session = session or Session()
         super().__init__()
 
@@ -164,10 +166,28 @@ class AdderApp(App[None]):
         self.value_column.scroll_to(y=scroll_y, animate=False, force=True, immediate=True)
 
     def refresh_columns(self) -> None:
-        """Redraw both columns from the session."""
+        """Redraw both columns from the session.
+
+        Each row is padded to the width of its column, so the stripe of a row
+        covers the column from edge to edge.
+        """
         colors = self.palette.colors
-        self.query_one("#list-text", Static).update(build_list_text(self.session.rows, colors))
-        self.query_one("#value-text", Static).update(build_value_text(self.session.rows, colors))
+        rows = self.session.rows
+        self.query_one("#list-text", Static).update(
+            build_list_text(rows, colors, self.stripes, self._column_width(self.list_column))
+        )
+        self.query_one("#value-text", Static).update(
+            build_value_text(rows, colors, self.stripes, self._column_width(self.value_column))
+        )
+
+    @staticmethod
+    def _column_width(column: VerticalScroll) -> int:
+        """The columns the rows of one panel can use."""
+        return column.container_size.width
+
+    def on_resize(self) -> None:
+        """Repad the rows for the new column widths."""
+        self.refresh_columns()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Evaluate the typed line, then add it to the List."""

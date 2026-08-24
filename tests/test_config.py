@@ -7,11 +7,17 @@ import pytest
 
 from adder.config import (
     DEFAULT_CONFIG_TEXT,
+    Appearance,
     ConfigError,
     Palette,
     default_config_path,
-    load_palette,
+    load_appearance,
 )
+
+
+def load_palette(path: Path | None) -> Palette:
+    """Read only the colors, which most of these tests care about."""
+    return load_appearance(path).palette
 
 
 def write(tmp_path: Path, body: str) -> Path:
@@ -23,6 +29,7 @@ def write(tmp_path: Path, body: str) -> Path:
 def test_default_palette_is_solarized_dark() -> None:
     palette = Palette()
     assert palette.background == "#002b36"
+    assert palette.stripe == "#073642"
     assert palette.text == "#839496"
     assert palette.error == "#dc322f"
 
@@ -48,6 +55,35 @@ def test_a_partial_config_keeps_the_defaults(tmp_path: Path) -> None:
 def test_an_unknown_key_or_section_is_ignored(tmp_path: Path) -> None:
     path = write(tmp_path, "[colors]\nnope = red\n[nonsense]\nalso = red\n")
     assert load_palette(path) == Palette()
+
+
+def test_the_stripe_color_is_read(tmp_path: Path) -> None:
+    path = write(tmp_path, "[colors]\nstripe = #111111\n")
+    assert load_palette(path).stripe == "#111111"
+
+
+def test_the_stripe_band_is_read(tmp_path: Path) -> None:
+    assert load_appearance(write(tmp_path, "[stripes]\nband = 3\n")).band == 3
+
+
+def test_the_band_defaults_to_one_row(tmp_path: Path) -> None:
+    assert load_appearance(write(tmp_path, "[colors]\ntext = red\n")) == Appearance(
+        palette=Palette(text="red")
+    )
+
+
+def test_the_default_config_text_parses_back_to_the_default_appearance(tmp_path: Path) -> None:
+    assert load_appearance(write(tmp_path, DEFAULT_CONFIG_TEXT)) == Appearance()
+
+
+def test_a_band_that_is_not_a_number_is_an_error(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="band must be a whole number: two"):
+        load_appearance(write(tmp_path, "[stripes]\nband = two\n"))
+
+
+def test_a_band_below_one_is_an_error(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="band must be 1 or more: 0"):
+        load_appearance(write(tmp_path, "[stripes]\nband = 0\n"))
 
 
 def test_a_named_color_is_accepted(tmp_path: Path) -> None:

@@ -19,9 +19,10 @@ def fixture_fake_app(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     recorded: dict[str, Any] = {}
 
     class FakeApp:
-        def __init__(self, width: int, palette: Palette) -> None:
+        def __init__(self, width: int, palette: Palette, band: int) -> None:
             recorded["width"] = width
             recorded["palette"] = palette
+            recorded["band"] = band
 
         def run(self) -> None:
             recorded["ran"] = True
@@ -32,7 +33,7 @@ def fixture_fake_app(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
 
 def test_main_runs_the_app(fake_app: dict[str, Any]) -> None:
     assert main_module.main([]) == 0
-    assert fake_app == {"width": 75, "palette": Palette(), "ran": True}
+    assert fake_app == {"width": 75, "palette": Palette(), "band": 1, "ran": True}
 
 
 def test_main_passes_the_width(fake_app: dict[str, Any]) -> None:
@@ -42,9 +43,10 @@ def test_main_passes_the_width(fake_app: dict[str, Any]) -> None:
 
 def test_main_loads_the_named_config(fake_app: dict[str, Any], tmp_path: Path) -> None:
     path = tmp_path / "custom.conf"
-    path.write_text("[colors]\ntext = red\n", encoding="utf-8")
+    path.write_text("[colors]\ntext = red\n[stripes]\nband = 4\n", encoding="utf-8")
     assert main_module.main(["-c", str(path)]) == 0
     assert fake_app["palette"].text == "red"
+    assert fake_app["band"] == 4
 
 
 def test_a_bare_config_flag_prints_the_defaults(
